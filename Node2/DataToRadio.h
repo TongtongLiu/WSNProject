@@ -8,6 +8,7 @@ enum {
 };
 
 typedef nx_struct DataToRadioMsg {
+  nx_uint16_t id;
   nx_uint16_t data;
 } DataToRadioMsg;
 
