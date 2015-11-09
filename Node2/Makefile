@@ -1,15 +1,16 @@
-COMPONENT=BlinkToRadioAppC
-BUILD_EXTRA_DEPS += BlinkToRadio.class
-CLEAN_EXTRA = *.class BlinkToRadioMsg.java
+COMPONENT=DataToRadioAppC
+BUILD_EXTRA_DEPS += DataToRadio.class
+CLEAN_EXTRA = *.class DataToRadioMsg.java
 
 CFLAGS += -I$(TOSDIR)/lib/T2Hack
 
-BlinkToRadio.class: $(wildcard *.java) BlinkToRadioMsg.java
+DataToRadio.class: $(wildcard *.java) DataToRadioMsg.java
 	javac -target 1.4 -source 1.4 *.java
 
-BlinkToRadioMsg.java:
-	mig java -target=null $(CFLAGS) -java-classname=BlinkToRadioMsg BlinkToRadio.h BlinkToRadioMsg -o $@
+DataToRadioMsg.java:
+	mig java -target=null $(CFLAGS) -java-classname=DataToRadioMsg DataToRadio.h DataToRadioMsg -o $@
 
 CFLAGS += -DCC2420_DEF_CHANNEL=7
+CFLAGS += -I$(TOSDIR)/lib/printf
 include $(MAKERULES)
 

@@ -38,16 +38,19 @@
  */
 #include <Timer.h>
 #include "DataToRadio.h"
+#include "printf.h"
 
 configuration DataToRadioAppC {
 }
 implementation {
   components MainC;
   components LedsC;
-  components BlinkToRadioC as App;
+  components DataToRadioC as App;
   components new TimerMilliC() as IntervalTimer;
   components new TimerMilliC() as RetransTimer;
   components ActiveMessageC;
+  components PrintfC;
+  components SerialStartC;
   components new AMSenderC(AM_DATATORADIOMSG);
   components RandomC;
 
