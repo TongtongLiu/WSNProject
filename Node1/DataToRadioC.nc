@@ -42,32 +42,60 @@
 module DataToRadioC {
   uses interface Boot;
   uses interface Leds;
-  uses interface Timer<TMilli> as Timer0;
+  uses interface Timer<TMilli> as IntervalTimer;
+  uses interface Timer<TMilli> as RetransTimer;
   uses interface Packet;
   uses interface AMPacket;
   uses interface AMSend;
-  uses interface Receive;
   uses interface SplitControl as AMControl;
+  uses interface Random;
 }
 implementation {
 
-  uint16_t counter;
-  message_t pkt;
+  uint16_t counter = 0;
+  uint16_t interval;
   bool busy = FALSE;
+  message_t pkt[SEND_ARRAY_LENGTH];
+  uint16_t sendbase = 0;
+  uint16_t nextseqnum = 0;
 
-  void setLeds(uint16_t val) {
-    if (val & 0x01)
-      call Leds.led0On();
-    else 
-      call Leds.led0Off();
-    if (val & 0x02)
-      call Leds.led1On();
-    else
-      call Leds.led1Off();
-    if (val & 0x04)
-      call Leds.led2On();
-    else
-      call Leds.led2Off();
+  int16_t getInterval(int16_t min, int16_t bits) {
+	int16_t rand = call Random.rand16();
+	if (rand < 0) {
+	  rand = -rand;
+	}
+	int16_t result = min + rand / (1 >> (16 - bits));
+	return result;
+  }
+
+  void showSuccess() {
+	call Leds.led0Toggle();
+  }
+
+  void showFail() {
+	call Leds.led1Toggle();
+  }
+
+  task void sendMsg() {
+    if (!busy) {
+      DataToRadioMsg* dtrpkt = (DataToRadioMsg*)(call Packet.getPayload(&pkt[nextseqnum], sizeof(DataToRadioMsg)));
+      if (dtrpkt == NULL) {
+		return;
+      }
+      dtrpkt->id = counter;
+	  dtrpkt->retrans1to2 = 0;
+	  dtrpkt->retrans2to3 = 0;
+      dtrpkt->data = inteval;
+	  call Ack.requestAck(&pkt[nextseqnum])
+      if (call AMSend.send(NEXT_HOP, &pkt[nextseqnum], sizeof(DataToRadioMsg)) == SUCCESS) {
+		counter++;
+		nextseqnum = (nextseqnum + 1) % SEND_ARRAY_LENGTH;
+        busy = TRUE;
+      }
+	  else {
+		post sendMsg();
+	  }
+    }
   }
 
   event void Boot.booted() {
@@ -76,7 +104,8 @@ implementation {
 
   event void AMControl.startDone(error_t err) {
     if (err == SUCCESS) {
-      call Timer0.startPeriodic(TIMER_PERIOD_MILLI);
+	  interval = getInterval(MIN_INTERVAL, INTERVAL_BITS);
+      call IntervalTimer.startOneShot(interval);
     }
     else {
       call AMControl.start();
@@ -86,34 +115,17 @@ implementation {
   event void AMControl.stopDone(error_t err) {
   }
 
-  event void Timer0.fired() {
-    counter++;
-    if (!busy) {
-      DataToRadioMsg* btrpkt = 
-	(DataToRadioMsg*)(call Packet.getPayload(&pkt, sizeof(DataToRadioMsg)));
-      if (btrpkt == NULL) {
-	return;
-      }
-      // btrpkt->nodeid = TOS_NODE_ID;
-      btrpkt->data = counter;
-      if (call AMSend.send(AM_BROADCAST_ADDR, 
-          &pkt, sizeof(DataToRadioMsg)) == SUCCESS) {
-        busy = TRUE;
-      }
-    }
+  event void IntervalTimer.fired() {
+	post sendMsg();
+
+	interval = getInterval(MIN_INTERVAL, INTERVAL_BITS);
+	call IntervalTimer.startOneShot(getInterval(MIN_INTERVAL, INTERVAL_BITS));
   }
 
   event void AMSend.sendDone(message_t* msg, error_t err) {
-    if (&pkt == msg) {
+    if (err == SUCCESS && &pkt == msg) {
       busy = FALSE;
     }
   }
 
-  event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len){
-    if (len == sizeof(DataToRadioMsg)) {
-      DataToRadioMsg* btrpkt = (DataToRadioMsg*)payload;
-      setLeds(btrpkt->counter);
-    }
-    return msg;
-  }
 }

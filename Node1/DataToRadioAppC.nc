@@ -45,10 +45,11 @@ implementation {
   components MainC;
   components LedsC;
   components BlinkToRadioC as App;
-  components new TimerMilliC() as Timer0;
+  components new TimerMilliC() as IntervalTimer;
+  components new TimerMilliC() as RetransTimer;
   components ActiveMessageC;
   components new AMSenderC(AM_DATATORADIOMSG);
-  components new AMReceiverC(AM_DATATORADIOMSG);
+  components RandomC;
 
   App.Boot -> MainC;
   App.Leds -> LedsC;
@@ -57,5 +58,6 @@ implementation {
   App.AMPacket -> AMSenderC;
   App.AMControl -> ActiveMessageC;
   App.AMSend -> AMSenderC;
-  App.Receive -> AMReceiverC;
+  App.Random -> RandomC;
+  App.Ack -> AMSenderC;
 }
