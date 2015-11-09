@@ -54,6 +54,9 @@ implementation {
   uint16_t counter;
   message_t pkt;
   bool busy = FALSE;
+  DataToRadio* buffer[50];
+  uint16_t bufferBegin;
+  uint16_t bufferEnd;
 
   void setLeds(uint16_t val) {
     if (val & 0x01)
@@ -72,6 +75,8 @@ implementation {
 
   event void Boot.booted() {
     call AMControl.start();
+    bufferBegin = 0;
+    bufferEnd = 0;
   }
 
   event void AMControl.startDone(error_t err) {
@@ -109,10 +114,14 @@ implementation {
     }
   }
 
+
+  // for receive packet
   event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len){
     if (len == sizeof(DataToRadioMsg)) {
       DataToRadioMsg* btrpkt = (DataToRadioMsg*)payload;
       setLeds(btrpkt->counter);
+      buffer[bufferEnd + 1] = btrpkt;
+      bufferEnd  = (bufferEnd + 1) % 50;
     }
     return msg;
   }
