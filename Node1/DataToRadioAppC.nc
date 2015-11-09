@@ -44,16 +44,17 @@ configuration DataToRadioAppC {
 implementation {
   components MainC;
   components LedsC;
-  components BlinkToRadioC as App;
+  components DataToRadioC as App;
   components new TimerMilliC() as IntervalTimer;
-  components new TimerMilliC() as RetransTimer;
+  components new TimerMilliC() as ResendTimer;
   components ActiveMessageC;
   components new AMSenderC(AM_DATATORADIOMSG);
   components RandomC;
 
   App.Boot -> MainC;
   App.Leds -> LedsC;
-  App.Timer0 -> Timer0;
+  App.IntervalTimer -> IntervalTimer;
+  App.ResendTimer -> ResendTimer;
   App.Packet -> AMSenderC;
   App.AMPacket -> AMSenderC;
   App.AMControl -> ActiveMessageC;

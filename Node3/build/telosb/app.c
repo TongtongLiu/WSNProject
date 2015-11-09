@@ -20114,7 +20114,7 @@ static inline error_t CC2420ControlP__Init__init(void )
   CC2420ControlP__m_short_addr = CC2420ControlP__ActiveMessageAddress__amAddress();
   CC2420ControlP__m_pan = CC2420ControlP__ActiveMessageAddress__amGroup();
   CC2420ControlP__m_tx_power = 31;
-  CC2420ControlP__m_channel = 26;
+  CC2420ControlP__m_channel = 7;
 
 
 

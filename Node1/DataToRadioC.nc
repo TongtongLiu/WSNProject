@@ -43,12 +43,13 @@ module DataToRadioC {
   uses interface Boot;
   uses interface Leds;
   uses interface Timer<TMilli> as IntervalTimer;
-  uses interface Timer<TMilli> as RetransTimer;
+  uses interface Timer<TMilli> as ResendTimer;
   uses interface Packet;
   uses interface AMPacket;
   uses interface AMSend;
   uses interface SplitControl as AMControl;
   uses interface Random;
+  uses interface PacketAcknowledgements as Ack;
 }
 implementation {
 
@@ -56,15 +57,18 @@ implementation {
   uint16_t interval;
   bool busy = FALSE;
   message_t pkt[SEND_ARRAY_LENGTH];
+  uint16_t ackflag[SEND_ARRAY_LENGTH];
   uint16_t sendbase = 0;
   uint16_t nextseqnum = 0;
+  uint16_t resendTimeout = 500;
 
   int16_t getInterval(int16_t min, int16_t bits) {
-	int16_t rand = call Random.rand16();
-	if (rand < 0) {
-	  rand = -rand;
+	int16_t r = call Random.rand16();
+	int16_t result;
+	if (r < 0) {
+	  r = -1 * r;
 	}
-	int16_t result = min + rand / (1 >> (16 - bits));
+	result = min + r / (1 >> (16 - bits));
 	return result;
   }
 
@@ -72,23 +76,50 @@ implementation {
 	call Leds.led0Toggle();
   }
 
-  void showFail() {
+  void showFull() {
 	call Leds.led1Toggle();
   }
 
+  void showResend() {
+	call Leds.led2Toggle();
+  }
+
+  task void resendMsg() {
+	if (!busy) {
+      DataToRadioMsg* dtrpkt = (DataToRadioMsg*)(call Packet.getPayload(&(pkt[sendbase]), sizeof(DataToRadioMsg)));
+      if (dtrpkt == NULL) {
+		return;
+      }
+	  dtrpkt->resend1to2 += 1;
+
+      if (call AMSend.send(NEXT_HOP, &(pkt[sendbase]), sizeof(DataToRadioMsg)) == SUCCESS) {
+        busy = TRUE;
+		showResend();
+      }
+	  else {
+		post resendMsg();
+	  }
+    }
+  }
+
   task void sendMsg() {
-    if (!busy) {
-      DataToRadioMsg* dtrpkt = (DataToRadioMsg*)(call Packet.getPayload(&pkt[nextseqnum], sizeof(DataToRadioMsg)));
+    if (!busy && ackflag[nextseqnum]) {
+      DataToRadioMsg* dtrpkt = (DataToRadioMsg*)(call Packet.getPayload(&(pkt[nextseqnum]), sizeof(DataToRadioMsg)));
       if (dtrpkt == NULL) {
 		return;
       }
       dtrpkt->id = counter;
-	  dtrpkt->retrans1to2 = 0;
-	  dtrpkt->retrans2to3 = 0;
-      dtrpkt->data = inteval;
-	  call Ack.requestAck(&pkt[nextseqnum])
-      if (call AMSend.send(NEXT_HOP, &pkt[nextseqnum], sizeof(DataToRadioMsg)) == SUCCESS) {
+	  dtrpkt->resend1to2 = 0;
+	  dtrpkt->resend2to3 = 0;
+      dtrpkt->data = interval;
+	  call Ack.requestAck(&(pkt[nextseqnum]));
+
+      if (call AMSend.send(NEXT_HOP, &(pkt[nextseqnum]), sizeof(DataToRadioMsg)) == SUCCESS) {
+		ackflag[nextseqnum] = 0;
 		counter++;
+		if (sendbase == nextseqnum) {
+		  call ResendTimer.startOneShot(resendTimeout);
+		}
 		nextseqnum = (nextseqnum + 1) % SEND_ARRAY_LENGTH;
         busy = TRUE;
       }
@@ -96,6 +127,12 @@ implementation {
 		post sendMsg();
 	  }
     }
+	else {
+	  if (!ackflag[nextseqnum]) {
+		showFull();
+		post resendMsg();
+	  }
+	}
   }
 
   event void Boot.booted() {
@@ -103,7 +140,11 @@ implementation {
   }
 
   event void AMControl.startDone(error_t err) {
+	uint16_t i = 0;
     if (err == SUCCESS) {
+	  for (i = 0; i < SEND_ARRAY_LENGTH; i++) {
+	    ackflag[i] = 1;
+	  }
 	  interval = getInterval(MIN_INTERVAL, INTERVAL_BITS);
       call IntervalTimer.startOneShot(interval);
     }
@@ -119,13 +160,27 @@ implementation {
 	post sendMsg();
 
 	interval = getInterval(MIN_INTERVAL, INTERVAL_BITS);
-	call IntervalTimer.startOneShot(getInterval(MIN_INTERVAL, INTERVAL_BITS));
+	call IntervalTimer.startOneShot(interval);
   }
 
   event void AMSend.sendDone(message_t* msg, error_t err) {
-    if (err == SUCCESS && &pkt == msg) {
+	DataToRadioMsg* dtrpkt;
+    if (err == SUCCESS) {
       busy = FALSE;
+	  if (call Ack.wasAcked(msg)) {
+		showSuccess();
+		dtrpkt = (DataToRadioMsg*)(call Packet.getPayload(msg, sizeof(DataToRadioMsg)));
+		ackflag[dtrpkt->id % SEND_ARRAY_LENGTH] = 1;
+		while (ackflag[sendbase]) {
+		  sendbase = (sendbase + 1) % SEND_ARRAY_LENGTH;
+		}
+	  }
     }
   }
 
+  event void ResendTimer.fired() {
+	post resendMsg();
+
+	call ResendTimer.startOneShot(resendTimeout);
+  }
 }
