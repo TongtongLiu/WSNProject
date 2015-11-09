@@ -44,13 +44,16 @@ configuration DataToRadioAppC {
 implementation {
   components MainC;
   components LedsC;
-  components BlinkToRadioC as App;
+  components DataToRadioC as App;
   components new TimerMilliC() as Timer0;
   components ActiveMessageC;
+  components PrintfC;
+  components SerialStartC;
   components new AMSenderC(AM_DATATORADIOMSG);
   components new AMReceiverC(AM_DATATORADIOMSG);
+  components new BigQueueC(DataToRadioMsg, 256);
 
-  App.Boot -> MainC;
+   App.Boot -> MainC;
   App.Leds -> LedsC;
   App.Timer0 -> Timer0;
   App.Packet -> AMSenderC;
@@ -58,4 +61,6 @@ implementation {
   App.AMControl -> ActiveMessageC;
   App.AMSend -> AMSenderC;
   App.Receive -> AMReceiverC;
+  App.Buffer -> BigQueueC;
+  App.ack -> AMSenderC;
 }

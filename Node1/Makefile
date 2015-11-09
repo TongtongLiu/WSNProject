@@ -11,5 +11,6 @@ DataToRadioMsg.java:
 	mig java -target=null $(CFLAGS) -java-classname=DataToRadioMsg DataToRadio.h DataToRadioMsg -o $@
 
 CFLAGS += -DCC2420_DEF_CHANNEL=7
+CFLAGS += -I$(TOSDIR)/lib/printf
 include $(MAKERULES)
 

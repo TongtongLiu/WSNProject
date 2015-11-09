@@ -38,6 +38,7 @@
  */
 #include <Timer.h>
 #include "DataToRadio.h"
+#include "printf.h"
 
 module DataToRadioC {
   uses interface Boot;
@@ -48,13 +49,16 @@ module DataToRadioC {
   uses interface AMSend;
   uses interface Receive;
   uses interface SplitControl as AMControl;
+  uses interface BigQueue<DataToRadioMsg> as Buffer;
+  uses interface PacketAcknowledgements as ack;
+  uses interface Random;
 }
-implementation {
 
+implementation {
+  uint16_t interval;
   uint16_t counter;
-  message_t pkt;
   bool busy = FALSE;
-  DataToRadio* buffer[50];
+  message_t pkt;
   uint16_t bufferBegin;
   uint16_t bufferEnd;
 
@@ -74,14 +78,18 @@ implementation {
   }
 
   event void Boot.booted() {
+    uint16_t i = 0;
     call AMControl.start();
     bufferBegin = 0;
     bufferEnd = 0;
+    for (i = 0;i < 200;i ++){
+      printf("%u\n", i);
+      printfflush();
+    }
   }
 
   event void AMControl.startDone(error_t err) {
     if (err == SUCCESS) {
-      call Timer0.startPeriodic(TIMER_PERIOD_MILLI);
     }
     else {
       call AMControl.start();
@@ -91,21 +99,26 @@ implementation {
   event void AMControl.stopDone(error_t err) {
   }
 
-  event void Timer0.fired() {
+  task void sendMessage(){
     counter++;
     if (!busy) {
-      DataToRadioMsg* btrpkt = 
-	(DataToRadioMsg*)(call Packet.getPayload(&pkt, sizeof(DataToRadioMsg)));
-      if (btrpkt == NULL) {
-	return;
+      if (!(call Buffer.empty())){
+        DataToRadioMsg* btrpkt = (DataToRadioMsg*)(call Packet.getPayload(&pkt, sizeof(DataToRadioMsg)));
+        if (btrpkt == NULL) {
+          return;
+        }
+        *btrpkt = call Buffer.head();
+        call ack.requestAck(&pkt);
+        if (call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(DataToRadioMsg)) == SUCCESS) {
+          busy = TRUE;
+        }
       }
-      // btrpkt->nodeid = TOS_NODE_ID;
-      btrpkt->data = counter;
-      if (call AMSend.send(AM_BROADCAST_ADDR, 
-          &pkt, sizeof(DataToRadioMsg)) == SUCCESS) {
-        busy = TRUE;
-      }
+
     }
+  }
+
+  event void Timer0.fired() {
+    post sendMessage();
   }
 
   event void AMSend.sendDone(message_t* msg, error_t err) {
@@ -119,9 +132,18 @@ implementation {
   event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len){
     if (len == sizeof(DataToRadioMsg)) {
       DataToRadioMsg* btrpkt = (DataToRadioMsg*)payload;
-      setLeds(btrpkt->counter);
-      buffer[bufferEnd + 1] = btrpkt;
-      bufferEnd  = (bufferEnd + 1) % 50;
+      // judge overhead
+      if (call Buffer.size() == call Buffer.maxSize()){
+          dbg("queue is full");
+      }
+      else{
+        if (call Buffer.enqueue(*btrpkt) == SUCCESS){
+          dbg("receive id = %d", btrpkt->id);
+        }
+        else{
+
+        }
+      }    
     }
     return msg;
   }

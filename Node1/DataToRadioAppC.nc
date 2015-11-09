@@ -38,6 +38,7 @@
  */
 #include <Timer.h>
 #include "DataToRadio.h"
+#include "printf.h"
 
 configuration DataToRadioAppC {
 }
@@ -48,6 +49,8 @@ implementation {
   components new TimerMilliC() as IntervalTimer;
   components new TimerMilliC() as ResendTimer;
   components ActiveMessageC;
+  components PrintfC;
+  components SerialStartC;
   components new AMSenderC(AM_DATATORADIOMSG);
   components RandomC;
 
