@@ -1,11 +1,11 @@
 <tos_image>
   <ident>
-    <uidhash>0EFBD381L</uidhash>
+    <uidhash>4272A53DL</uidhash>
     <hostname>liutongtong-tin</hostname>
     <username>liutongtong</username>
     <appname>BaseStationC</appname>
     <userhash>90F134EFL</userhash>
-    <timestamp>5640AFDDL</timestamp>
+    <timestamp>564182D0L</timestamp>
     <deluge_support>no</deluge_support>
     <platform>telosb</platform>
   </ident>
@@ -851,7 +851,7 @@
 :107460000000FED040000000FED020000000B0125E
 :10747000C04C824FE611D2421611C611C243C71149
 :10748000F2401F009A12F24007001315C243A011E8
-:10749000C243F617C243C911C243A1124B43B012F3
+:10749000C243F617D243C911C243A1124B43B012E3
 :1074A00042714F9BFC234F46B012464032D23F40C0
 :1074B00016153E40A6110D4F3D5070028E4F000034
 :1074C0003F5034002E530F9DF923C2439512C243FF
