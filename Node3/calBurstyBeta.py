@@ -1,6 +1,4 @@
 def calBurstyBeta(reception, data):
-	#reception = 0.7;
-	#data = [1,1,0,1,1,0,1,0,1,0,1,1,1,1,1,0,1,0,1,1,1,1];
 	cons = 0;
 	maxconsN = 0;
 	maxconsP = 0;
@@ -13,6 +11,12 @@ def calBurstyBeta(reception, data):
 	condFail = {};
 	condRate = {};
 	for (i,v) in enumerate(data):
+		if (i == 0):
+			if (v == 0):
+				cons = -1;
+			else:
+				cons = 1;
+			continue;
 		if (v == 0):
 			if (condFail.has_key(cons)):
 				condFail[cons] = condFail[cons]  + 1;
@@ -35,17 +39,20 @@ def calBurstyBeta(reception, data):
 			maxconsP = cons;
 		if (cons < maxconsN):
 			maxconsN = cons;
+		print(i,v);
 
 	for (i,v) in condSuceed.items():
-		#print(i,v);
+		print("succeed",i,v);
 		if (condFail.has_key(i)):
-			condRate[i] = condSuceed[i] / (condSuceed[i] + condFail[i]);
+			condRate[i] = float(condSuceed[i]) / float(condSuceed[i] + condFail[i]);
 		else:
 			condRate[i] = 1;
 	for (i,v) in condFail.items():
+		print("fail",i,v);
 		if not condRate.has_key(i):
 			condRate[i] = 0;
 	for (i,v) in condRate.items():
+		print("rate",i,v);
 		if (i < 0):
 			sumI = sumI + reception;
 			sumE = sumE + v;
@@ -55,20 +62,23 @@ def calBurstyBeta(reception, data):
 	if (sumI == 0):
 		meanI = 0;
 	else:
-		meanI = sumI / (maxconsP - maxconsN);
+		meanI = float(sumI) / float(maxconsP - maxconsN);
 	if (sumE == 0):
 		meanE = 0;
 	else:
-		meanE = sumE / (maxconsP - maxconsN);
+		meanE = float(sumE) / float(maxconsP - maxconsN);
 	if (meanI - meanE) == 0: 
 		Beta = 0;
 	else:
-		Beta = (meanI - meanE) / meanI;
+		Beta = float(meanI - meanE) / float(meanI);
 	print(Beta);
-	
+
 	return Beta;
 
-
+#test
+reception = 0.7;
+data = [1,1,0,1,1,1,1,0,1,1,1,1,1,1,1,0,1,0,0,0,1,1];
+calBurstyBeta(reception, data);
 
 
 
