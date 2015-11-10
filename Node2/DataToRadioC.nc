@@ -43,107 +43,145 @@
 module DataToRadioC {
   uses interface Boot;
   uses interface Leds;
-  uses interface Timer<TMilli> as Timer0;
+  uses interface Timer<TMilli> as SenderTimer;
+  uses interface LocalTime<TMilli> as LocalTimer;
   uses interface Packet;
   uses interface AMPacket;
   uses interface AMSend;
-  uses interface Receive;
   uses interface SplitControl as AMControl;
-  uses interface BigQueue<DataToRadioMsg> as Buffer;
-  uses interface PacketAcknowledgements as ack;
   uses interface Random;
+  uses interface PacketAcknowledgements as Ack;
+  uses interface Receive;
 }
-
 implementation {
-  uint16_t interval;
-  uint16_t counter;
+  uint32_t counter = 0;
+  uint32_t sendstart;
+  uint32_t sendstop;
+  uint32_t data[SIZE_OF_QUEUE];
+  uint32_t receiverptr = 0;
+  uint32_t senderptr = 0;
+  uint32_t lastsend = SIZE_OF_QUEUE - 1;
   bool busy = FALSE;
+  bool full = FALSE;
   message_t pkt;
-  uint16_t bufferBegin;
-  uint16_t bufferEnd;
+  
+  void showSuccess() {
+    call Leds.led0Toggle();
+  }
 
-  void setLeds(uint16_t val) {
-    if (val & 0x01)
-      call Leds.led0On();
-    else 
-      call Leds.led0Off();
-    if (val & 0x02)
-      call Leds.led1On();
-    else
-      call Leds.led1Off();
-    if (val & 0x04)
-      call Leds.led2On();
-    else
-      call Leds.led2Off();
+  void showResend() {
+    call Leds.led1Toggle();
+  }
+
+  void showFull() {
+    call Leds.led2Toggle();
+  }
+
+   void showReceive() {
+    call Leds.led2Toggle();
+   }
+
+  /*int32_t getRandom(int32_t minv, int32_t range) {
+    int32_t randv, result;
+    randv = call Random.rand32();
+    if (randv < 0) {
+      randv = -1 * randv;
+    }
+    result = minv + randv % 1024;
+    return result;
+  }*/
+
+  task void sendMsg() {
+    if (!busy) {
+      DataToRadioMsg* dtrpkt = (DataToRadioMsg*)(call Packet.getPayload(&pkt, sizeof(DataToRadioMsg)));
+      if (dtrpkt == NULL) {
+        return;
+      }
+      if (senderptr != lastsend) {
+        dtrpkt->id = counter;
+        dtrpkt->data = data[senderptr];
+      }
+      else {
+        dtrpkt->resend2to3 += 1;
+      }
+      call Ack.requestAck(&pkt);
+
+      if (call AMSend.send(3, &pkt, sizeof(DataToRadioMsg)) == SUCCESS) {
+        counter++;
+        lastsend = senderptr;
+        busy = TRUE;
+      }
+      else {
+        post sendMsg();
+      }
+    }
   }
 
   event void Boot.booted() {
-    uint16_t i = 0;
     call AMControl.start();
-    bufferBegin = 0;
-    bufferEnd = 0;
-    for (i = 0;i < 200;i ++){
-      printf("%u\n", i);
-      printfflush();
-    }
   }
 
   event void AMControl.startDone(error_t err) {
     if (err == SUCCESS) {
+      call SenderTimer.startPeriodic(MIN_INTERVAL*2);
     }
     else {
       call AMControl.start();
     }
   }
 
-  event void AMControl.stopDone(error_t err) {
-  }
+  event void AMControl.stopDone(error_t err) {}
 
-  task void sendMessage(){
-    counter++;
-    if (!busy) {
-      if (!(call Buffer.empty())){
-        DataToRadioMsg* btrpkt = (DataToRadioMsg*)(call Packet.getPayload(&pkt, sizeof(DataToRadioMsg)));
-        if (btrpkt == NULL) {
-          return;
-        }
-        *btrpkt = call Buffer.head();
-        call ack.requestAck(&pkt);
-        if (call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(DataToRadioMsg)) == SUCCESS) {
-          busy = TRUE;
-        }
+  /*event void GeneratorTimer.fired() {
+    if (!full) {
+      data[generatorptr] = getRandom(MIN_INTERVAL, INTERVAL_RANGE);
+      generatorptr = (generatorptr + 1) % SIZE_OF_QUEUE;
+      if (generatorptr == senderptr) {
+        full = TRUE;
       }
-
     }
-  }
+  }*/
 
-  event void Timer0.fired() {
-    post sendMessage();
+  event void SenderTimer.fired() {
+    if (full || receiverptr != senderptr) {
+      post sendMsg();
+    }
   }
 
   event void AMSend.sendDone(message_t* msg, error_t err) {
-    if (&pkt == msg) {
+    if (err == SUCCESS && &pkt == msg) {
+      if (call Ack.wasAcked(msg)) {
+        showSuccess();
+        senderptr = (senderptr + 1) % SIZE_OF_QUEUE;
+        full = FALSE;
+        busy = FALSE;
+      }
+      else {
+        showResend();
+        busy = FALSE;
+        post sendMsg();
+      }
+    }
+    else {
       busy = FALSE;
+      post sendMsg();
     }
   }
 
-
-  // for receive packet
   event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len){
     if (len == sizeof(DataToRadioMsg)) {
       DataToRadioMsg* btrpkt = (DataToRadioMsg*)payload;
-      // judge overhead
-      if (call Buffer.size() == call Buffer.maxSize()){
-          dbg("queue is full");
+      printf("receive:id=%u", btrpkt->id);
+      printfflush();
+      //setLeds(btrpkt->counter);
+      if (!full) {
+        data[receiverptr] = btrpkt->data;
+        receiverptr = (receiverptr + 1) % SIZE_OF_QUEUE;
+        if (receiverptr == senderptr) {
+          full = TRUE;
+        }
       }
-      else{
-        if (call Buffer.enqueue(*btrpkt) == SUCCESS){
-          dbg("receive id = %d", btrpkt->id);
-        }
-        else{
-
-        }
-      }    
+      showReceive();
     }
     return msg;
   }

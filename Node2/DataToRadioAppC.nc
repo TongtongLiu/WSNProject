@@ -38,6 +38,7 @@
  */
 #include <Timer.h>
 #include "DataToRadio.h"
+#include "printf.h"
 
 configuration DataToRadioAppC {
 }
@@ -45,22 +46,24 @@ implementation {
   components MainC;
   components LedsC;
   components DataToRadioC as App;
-  components new TimerMilliC() as Timer0;
+  components new TimerMilliC() as SenderTimer;
+  components LocalTimeMilliC as LocalTimer;
   components ActiveMessageC;
+  components new AMSenderC(AM_DATATORADIOMSG);
+  components RandomC;
   components PrintfC;
   components SerialStartC;
-  components new AMSenderC(AM_DATATORADIOMSG);
   components new AMReceiverC(AM_DATATORADIOMSG);
-  components new BigQueueC(DataToRadioMsg, 256);
 
-   App.Boot -> MainC;
+  App.Boot -> MainC;
   App.Leds -> LedsC;
-  App.Timer0 -> Timer0;
+  App.SenderTimer -> SenderTimer;
+  App.LocalTimer -> LocalTimer;
   App.Packet -> AMSenderC;
   App.AMPacket -> AMSenderC;
   App.AMControl -> ActiveMessageC;
   App.AMSend -> AMSenderC;
+  App.Random -> RandomC;
+  App.Ack -> AMSenderC;
   App.Receive -> AMReceiverC;
-  App.Buffer -> BigQueueC;
-  App.ack -> AMSenderC;
 }
