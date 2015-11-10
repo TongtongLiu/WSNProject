@@ -7,12 +7,12 @@
 public class DataToRadioMsg extends net.tinyos.message.Message {
 
     /** The default size of this message type in bytes. */
-    public static final int DEFAULT_MESSAGE_SIZE = 8;
+    public static final int DEFAULT_MESSAGE_SIZE = 10;
 
     /** The Active Message type associated with this message. */
     public static final int AM_TYPE = 7;
 
-    /** Create a new DataToRadioMsg of size 8. */
+    /** Create a new DataToRadioMsg of size 10. */
     public DataToRadioMsg() {
         super(DEFAULT_MESSAGE_SIZE);
         amTypeSet(AM_TYPE);
@@ -88,10 +88,13 @@ public class DataToRadioMsg extends net.tinyos.message.Message {
         s += "  [id=0x"+Long.toHexString(get_id())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
-        s += "  [retrans1to2=0x"+Long.toHexString(get_retrans1to2())+"]\n";
+        s += "  [resend1to2=0x"+Long.toHexString(get_resend1to2())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
-        s += "  [retrans2to3=0x"+Long.toHexString(get_retrans2to3())+"]\n";
+        s += "  [resend2to3=0x"+Long.toHexString(get_resend2to3())+"]\n";
+      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
+      try {
+        s += "  [buffer=0x"+Long.toHexString(get_buffer())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
         s += "  [data=0x"+Long.toHexString(get_data())+"]\n";
@@ -165,135 +168,198 @@ public class DataToRadioMsg extends net.tinyos.message.Message {
     }
 
     /////////////////////////////////////////////////////////
-    // Accessor methods for field: retrans1to2
+    // Accessor methods for field: resend1to2
     //   Field type: int, unsigned
     //   Offset (bits): 16
     //   Size (bits): 16
     /////////////////////////////////////////////////////////
 
     /**
-     * Return whether the field 'retrans1to2' is signed (false).
+     * Return whether the field 'resend1to2' is signed (false).
      */
-    public static boolean isSigned_retrans1to2() {
+    public static boolean isSigned_resend1to2() {
         return false;
     }
 
     /**
-     * Return whether the field 'retrans1to2' is an array (false).
+     * Return whether the field 'resend1to2' is an array (false).
      */
-    public static boolean isArray_retrans1to2() {
+    public static boolean isArray_resend1to2() {
         return false;
     }
 
     /**
-     * Return the offset (in bytes) of the field 'retrans1to2'
+     * Return the offset (in bytes) of the field 'resend1to2'
      */
-    public static int offset_retrans1to2() {
+    public static int offset_resend1to2() {
         return (16 / 8);
     }
 
     /**
-     * Return the offset (in bits) of the field 'retrans1to2'
+     * Return the offset (in bits) of the field 'resend1to2'
      */
-    public static int offsetBits_retrans1to2() {
+    public static int offsetBits_resend1to2() {
         return 16;
     }
 
     /**
-     * Return the value (as a int) of the field 'retrans1to2'
+     * Return the value (as a int) of the field 'resend1to2'
      */
-    public int get_retrans1to2() {
-        return (int)getUIntBEElement(offsetBits_retrans1to2(), 16);
+    public int get_resend1to2() {
+        return (int)getUIntBEElement(offsetBits_resend1to2(), 16);
     }
 
     /**
-     * Set the value of the field 'retrans1to2'
+     * Set the value of the field 'resend1to2'
      */
-    public void set_retrans1to2(int value) {
-        setUIntBEElement(offsetBits_retrans1to2(), 16, value);
+    public void set_resend1to2(int value) {
+        setUIntBEElement(offsetBits_resend1to2(), 16, value);
     }
 
     /**
-     * Return the size, in bytes, of the field 'retrans1to2'
+     * Return the size, in bytes, of the field 'resend1to2'
      */
-    public static int size_retrans1to2() {
+    public static int size_resend1to2() {
         return (16 / 8);
     }
 
     /**
-     * Return the size, in bits, of the field 'retrans1to2'
+     * Return the size, in bits, of the field 'resend1to2'
      */
-    public static int sizeBits_retrans1to2() {
+    public static int sizeBits_resend1to2() {
         return 16;
     }
 
     /////////////////////////////////////////////////////////
-    // Accessor methods for field: retrans2to3
+    // Accessor methods for field: resend2to3
     //   Field type: int, unsigned
     //   Offset (bits): 32
     //   Size (bits): 16
     /////////////////////////////////////////////////////////
 
     /**
-     * Return whether the field 'retrans2to3' is signed (false).
+     * Return whether the field 'resend2to3' is signed (false).
      */
-    public static boolean isSigned_retrans2to3() {
+    public static boolean isSigned_resend2to3() {
         return false;
     }
 
     /**
-     * Return whether the field 'retrans2to3' is an array (false).
+     * Return whether the field 'resend2to3' is an array (false).
      */
-    public static boolean isArray_retrans2to3() {
+    public static boolean isArray_resend2to3() {
         return false;
     }
 
     /**
-     * Return the offset (in bytes) of the field 'retrans2to3'
+     * Return the offset (in bytes) of the field 'resend2to3'
      */
-    public static int offset_retrans2to3() {
+    public static int offset_resend2to3() {
         return (32 / 8);
     }
 
     /**
-     * Return the offset (in bits) of the field 'retrans2to3'
+     * Return the offset (in bits) of the field 'resend2to3'
      */
-    public static int offsetBits_retrans2to3() {
+    public static int offsetBits_resend2to3() {
         return 32;
     }
 
     /**
-     * Return the value (as a int) of the field 'retrans2to3'
+     * Return the value (as a int) of the field 'resend2to3'
      */
-    public int get_retrans2to3() {
-        return (int)getUIntBEElement(offsetBits_retrans2to3(), 16);
+    public int get_resend2to3() {
+        return (int)getUIntBEElement(offsetBits_resend2to3(), 16);
     }
 
     /**
-     * Set the value of the field 'retrans2to3'
+     * Set the value of the field 'resend2to3'
      */
-    public void set_retrans2to3(int value) {
-        setUIntBEElement(offsetBits_retrans2to3(), 16, value);
+    public void set_resend2to3(int value) {
+        setUIntBEElement(offsetBits_resend2to3(), 16, value);
     }
 
     /**
-     * Return the size, in bytes, of the field 'retrans2to3'
+     * Return the size, in bytes, of the field 'resend2to3'
      */
-    public static int size_retrans2to3() {
+    public static int size_resend2to3() {
         return (16 / 8);
     }
 
     /**
-     * Return the size, in bits, of the field 'retrans2to3'
+     * Return the size, in bits, of the field 'resend2to3'
      */
-    public static int sizeBits_retrans2to3() {
+    public static int sizeBits_resend2to3() {
+        return 16;
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: buffer
+    //   Field type: int, unsigned
+    //   Offset (bits): 48
+    //   Size (bits): 16
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'buffer' is signed (false).
+     */
+    public static boolean isSigned_buffer() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'buffer' is an array (false).
+     */
+    public static boolean isArray_buffer() {
+        return false;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'buffer'
+     */
+    public static int offset_buffer() {
+        return (48 / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'buffer'
+     */
+    public static int offsetBits_buffer() {
+        return 48;
+    }
+
+    /**
+     * Return the value (as a int) of the field 'buffer'
+     */
+    public int get_buffer() {
+        return (int)getUIntBEElement(offsetBits_buffer(), 16);
+    }
+
+    /**
+     * Set the value of the field 'buffer'
+     */
+    public void set_buffer(int value) {
+        setUIntBEElement(offsetBits_buffer(), 16, value);
+    }
+
+    /**
+     * Return the size, in bytes, of the field 'buffer'
+     */
+    public static int size_buffer() {
+        return (16 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of the field 'buffer'
+     */
+    public static int sizeBits_buffer() {
         return 16;
     }
 
     /////////////////////////////////////////////////////////
     // Accessor methods for field: data
     //   Field type: int, unsigned
-    //   Offset (bits): 48
+    //   Offset (bits): 64
     //   Size (bits): 16
     /////////////////////////////////////////////////////////
 
@@ -315,14 +381,14 @@ public class DataToRadioMsg extends net.tinyos.message.Message {
      * Return the offset (in bytes) of the field 'data'
      */
     public static int offset_data() {
-        return (48 / 8);
+        return (64 / 8);
     }
 
     /**
      * Return the offset (in bits) of the field 'data'
      */
     public static int offsetBits_data() {
-        return 48;
+        return 64;
     }
 
     /**

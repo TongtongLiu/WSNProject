@@ -95,7 +95,7 @@ implementation {
       }
       if (senderptr != lastsend) {
         dtrpkt->id = counter;
-        dtrpkt->nodeid = TOS_NODE_ID;
+        //dtrpkt->nodeid = TOS_NODE_ID;
         dtrpkt->data = data[senderptr];
         dtrpkt->resend1to2 = 0;
         dtrpkt->resend2to3 = 0;
@@ -122,7 +122,7 @@ implementation {
 
   event void AMControl.startDone(error_t err) {
     if (err == SUCCESS) {
-      call GeneratorTimer.startPeriodic(MIN_INTERVAL);
+      call GeneratorTimer.startPeriodic(MIN_INTERVAL / 2);
       call SenderTimer.startOneShot(interval);
     }
     else {

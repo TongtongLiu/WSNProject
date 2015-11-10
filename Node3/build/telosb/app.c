@@ -20118,9 +20118,9 @@ static inline error_t CC2420ControlP__Init__init(void )
 
 
 
-  CC2420ControlP__addressRecognition = FALSE;
 
 
+  CC2420ControlP__addressRecognition = TRUE;
 
 
 

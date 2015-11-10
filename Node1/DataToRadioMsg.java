@@ -7,12 +7,12 @@
 public class DataToRadioMsg extends net.tinyos.message.Message {
 
     /** The default size of this message type in bytes. */
-    public static final int DEFAULT_MESSAGE_SIZE = 8;
+    public static final int DEFAULT_MESSAGE_SIZE = 10;
 
     /** The Active Message type associated with this message. */
     public static final int AM_TYPE = 7;
 
-    /** Create a new DataToRadioMsg of size 8. */
+    /** Create a new DataToRadioMsg of size 10. */
     public DataToRadioMsg() {
         super(DEFAULT_MESSAGE_SIZE);
         amTypeSet(AM_TYPE);
@@ -92,6 +92,9 @@ public class DataToRadioMsg extends net.tinyos.message.Message {
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
         s += "  [resend2to3=0x"+Long.toHexString(get_resend2to3())+"]\n";
+      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
+      try {
+        s += "  [buffer=0x"+Long.toHexString(get_buffer())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
         s += "  [data=0x"+Long.toHexString(get_data())+"]\n";
@@ -291,9 +294,72 @@ public class DataToRadioMsg extends net.tinyos.message.Message {
     }
 
     /////////////////////////////////////////////////////////
-    // Accessor methods for field: data
+    // Accessor methods for field: buffer
     //   Field type: int, unsigned
     //   Offset (bits): 48
+    //   Size (bits): 16
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'buffer' is signed (false).
+     */
+    public static boolean isSigned_buffer() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'buffer' is an array (false).
+     */
+    public static boolean isArray_buffer() {
+        return false;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'buffer'
+     */
+    public static int offset_buffer() {
+        return (48 / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'buffer'
+     */
+    public static int offsetBits_buffer() {
+        return 48;
+    }
+
+    /**
+     * Return the value (as a int) of the field 'buffer'
+     */
+    public int get_buffer() {
+        return (int)getUIntBEElement(offsetBits_buffer(), 16);
+    }
+
+    /**
+     * Set the value of the field 'buffer'
+     */
+    public void set_buffer(int value) {
+        setUIntBEElement(offsetBits_buffer(), 16, value);
+    }
+
+    /**
+     * Return the size, in bytes, of the field 'buffer'
+     */
+    public static int size_buffer() {
+        return (16 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of the field 'buffer'
+     */
+    public static int sizeBits_buffer() {
+        return 16;
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: data
+    //   Field type: int, unsigned
+    //   Offset (bits): 64
     //   Size (bits): 16
     /////////////////////////////////////////////////////////
 
@@ -315,14 +381,14 @@ public class DataToRadioMsg extends net.tinyos.message.Message {
      * Return the offset (in bytes) of the field 'data'
      */
     public static int offset_data() {
-        return (48 / 8);
+        return (64 / 8);
     }
 
     /**
      * Return the offset (in bits) of the field 'data'
      */
     public static int offsetBits_data() {
-        return 48;
+        return 64;
     }
 
     /**

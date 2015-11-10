@@ -38,7 +38,7 @@
  */
 #include <Timer.h>
 #include "DataToRadio.h"
-#include "printf.h"
+//#include "printf.h"
 
 configuration DataToRadioAppC {
 }

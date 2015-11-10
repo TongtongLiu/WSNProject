@@ -38,7 +38,7 @@
  */
 #include <Timer.h>
 #include "DataToRadio.h"
-#include "printf.h"
+//#include "printf.h"
 
 module DataToRadioC {
   uses interface Boot;
@@ -58,7 +58,7 @@ implementation {
   uint16_t interval = MIN_INTERVAL;
   uint16_t sendstart;
   uint16_t sendstop;
-  uint16_t data[SIZE_OF_QUEUE];
+  DataToRadioMsg data[SIZE_OF_QUEUE];
   uint16_t receiverptr = 0;
   uint16_t senderptr = 0;
   uint16_t lastsend = SIZE_OF_QUEUE - 1;
@@ -99,14 +99,17 @@ implementation {
         return;
       }
       if (senderptr != lastsend) {
-        dtrpkt->id = counter;
-        dtrpkt->nodeid = TOS_NODE_ID;
-        dtrpkt->data = data[senderptr];
+        //dtrpkt->id = counter;
+        //dtrpkt->nodeid = TOS_NODE_ID;
+        dtrpkt->id = data[senderptr].id;
+        dtrpkt->data = data[senderptr].data;
+        dtrpkt->resend1to2 = data[senderptr].resend1to2;
+        dtrpkt->resend2to3 = 0;
         if (receiverptr < senderptr || full) {
           dtrpkt->buffer = receiverptr + SIZE_OF_QUEUE - senderptr - 1;
         }
         else {
-          dtrpkt->buffer = receiverptr - SIZE_OF_QUEUE - 1;
+          dtrpkt->buffer = receiverptr - senderptr - 1;
         }
       }
       else {
@@ -160,7 +163,7 @@ implementation {
     if (err == SUCCESS && &pkt == msg) {
       if (call Ack.wasAcked(msg)) {
         showSuccess();
-        counter++;
+        //counter++;
         senderptr = (senderptr + 1) % SIZE_OF_QUEUE;
         full = FALSE;
         busy = FALSE;
@@ -168,7 +171,6 @@ implementation {
       else {
         showResend();
         busy = FALSE;
-        post sendMsg();
       }
     }
     else {
@@ -180,11 +182,13 @@ implementation {
   event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len) {
     if (len == sizeof(DataToRadioMsg)) {
       DataToRadioMsg* btrpkt = (DataToRadioMsg*)payload;
-      printf("id = %u", btrpkt->id);
-      printfflush();
+      //printf("id = %u", btrpkt->id);
+      //printfflush();
       //setLeds(btrpkt->counter);
       if (!full) {
-        data[receiverptr] = btrpkt->data;
+        data[receiverptr].id = btrpkt->id;
+        data[receiverptr].data = btrpkt->data;
+        data[receiverptr].resend1to2 = btrpkt->resend1to2;
         receiverptr = (receiverptr + 1) % SIZE_OF_QUEUE;
         if (receiverptr == senderptr) {
           full = TRUE;
