@@ -51,8 +51,8 @@ implementation {
   components ActiveMessageC;
   components new AMSenderC(AM_DATATORADIOMSG);
   components RandomC;
-  components PrintfC;
-  components SerialStartC;
+  //components PrintfC;
+  //components SerialStartC;
   components new AMReceiverC(AM_DATATORADIOMSG);
 
   App.Boot -> MainC;

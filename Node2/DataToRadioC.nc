@@ -54,13 +54,14 @@ module DataToRadioC {
   uses interface Receive;
 }
 implementation {
-  uint32_t counter = 0;
-  uint32_t sendstart;
-  uint32_t sendstop;
-  uint32_t data[SIZE_OF_QUEUE];
-  uint32_t receiverptr = 0;
-  uint32_t senderptr = 0;
-  uint32_t lastsend = SIZE_OF_QUEUE - 1;
+  uint16_t counter = 0;
+  uint16_t interval = MIN_INTERVAL;
+  uint16_t sendstart;
+  uint16_t sendstop;
+  uint16_t data[SIZE_OF_QUEUE];
+  uint16_t receiverptr = 0;
+  uint16_t senderptr = 0;
+  uint16_t lastsend = SIZE_OF_QUEUE - 1;
   bool busy = FALSE;
   bool full = FALSE;
   message_t pkt;
@@ -81,9 +82,9 @@ implementation {
     call Leds.led2Toggle();
    }
 
-  /*int32_t getRandom(int32_t minv, int32_t range) {
-    int32_t randv, result;
-    randv = call Random.rand32();
+  /*int16_t getRandom(int16_t minv, int16_t range) {
+    int16_t randv, result;
+    randv = call Random.rand16();
     if (randv < 0) {
       randv = -1 * randv;
     }
@@ -99,15 +100,21 @@ implementation {
       }
       if (senderptr != lastsend) {
         dtrpkt->id = counter;
+        dtrpkt->nodeid = TOS_NODE_ID;
         dtrpkt->data = data[senderptr];
+        if (receiverptr < senderptr || full) {
+          dtrpkt->buffer = receiverptr + SIZE_OF_QUEUE - senderptr - 1;
+        }
+        else {
+          dtrpkt->buffer = receiverptr - SIZE_OF_QUEUE - 1;
+        }
       }
       else {
         dtrpkt->resend2to3 += 1;
       }
       call Ack.requestAck(&pkt);
 
-      if (call AMSend.send(3, &pkt, sizeof(DataToRadioMsg)) == SUCCESS) {
-        counter++;
+      if (call AMSend.send(NEXT_HOP, &pkt, sizeof(DataToRadioMsg)) == SUCCESS) {
         lastsend = senderptr;
         busy = TRUE;
       }
@@ -123,7 +130,7 @@ implementation {
 
   event void AMControl.startDone(error_t err) {
     if (err == SUCCESS) {
-      call SenderTimer.startPeriodic(MIN_INTERVAL*2);
+      call SenderTimer.startOneShot(interval);
     }
     else {
       call AMControl.start();
@@ -146,12 +153,14 @@ implementation {
     if (full || receiverptr != senderptr) {
       post sendMsg();
     }
+    call SenderTimer.startOneShot(interval);
   }
 
   event void AMSend.sendDone(message_t* msg, error_t err) {
     if (err == SUCCESS && &pkt == msg) {
       if (call Ack.wasAcked(msg)) {
         showSuccess();
+        counter++;
         senderptr = (senderptr + 1) % SIZE_OF_QUEUE;
         full = FALSE;
         busy = FALSE;
@@ -168,10 +177,10 @@ implementation {
     }
   }
 
-  event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len){
+  event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len) {
     if (len == sizeof(DataToRadioMsg)) {
       DataToRadioMsg* btrpkt = (DataToRadioMsg*)payload;
-      printf("receive:id=%u", btrpkt->id);
+      printf("id = %u", btrpkt->id);
       printfflush();
       //setLeds(btrpkt->counter);
       if (!full) {
