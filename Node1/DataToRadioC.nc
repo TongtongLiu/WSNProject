@@ -88,7 +88,7 @@ implementation {
   }
 
   task void sendMsg() {
-    if (!busy) {
+    if (!busy && (full || receiverptr != senderptr)) {
       DataToRadioMsg* dtrpkt = (DataToRadioMsg*)(call Packet.getPayload(&pkt, sizeof(DataToRadioMsg)));
       if (dtrpkt == NULL) {
         return;
