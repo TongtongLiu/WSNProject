@@ -1,11 +1,11 @@
 <tos_image>
   <ident>
-    <uidhash>E1EF0485L</uidhash>
+    <uidhash>5A645D2BL</uidhash>
     <hostname>liutongtong-tin</hostname>
     <username>liutongtong</username>
     <appname>DataToRadioAppC</appname>
     <userhash>90F134EFL</userhash>
-    <timestamp>56429A4EL</timestamp>
+    <timestamp>5642B52AL</timestamp>
     <deluge_support>no</deluge_support>
     <platform>telosb</platform>
   </ident>
@@ -719,7 +719,7 @@
 :106C20004E9A01284E8A4C6C0D6D5B83F7233041E0
 :106C30000EEE3B401100053C0D100E6E0E9A012821
 :0C6C40000E8A0C6C0D6D1B83F723304195
-:106C4C000100020012A201000A00FF00FFFFFF0179
+:106C4C000100020012A201000100FF00FFFFFF0182
 :086C5C00010022FFFFFF01000F
 :10FFE0003040024D30403040DE4FF65092403040BD
 :10FFF000AC4D0C6B30403040E059C25930400040AD

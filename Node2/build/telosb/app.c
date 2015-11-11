@@ -971,7 +971,7 @@ typedef struct __nesc_unnamed4263 {
 TMicro;
 # 6 "DataToRadio.h"
 enum __nesc_unnamed4264 {
-  MIN_INTERVAL = 10, 
+  MIN_INTERVAL = 1, 
   SIZE_OF_QUEUE = 256, 
   DATA_MIN = 0, 
   DATA_RANGE = 1024, 
