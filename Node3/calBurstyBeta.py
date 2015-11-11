@@ -1,4 +1,4 @@
-def calBurstyBeta(reception, data):
+def calBurstyBeta(data):
 	cons = 0;
 	maxconsN = 0;
 	maxconsP = 0;
@@ -10,7 +10,20 @@ def calBurstyBeta(reception, data):
 	condSuceed= {};
 	condFail = {};
 	condRate = {};
+	list = [];
 	for (i,v) in enumerate(data):
+		while (v != 0):
+			list.append(0);
+			v = v - 1;
+		list.append(1);
+	sum = 0;
+	succeed = 0;
+	for (i,v) in enumerate(list):
+		if (v == 0):
+			succeed = succeed + 1;
+		sum = sum + 1;
+	reception = float(succeed) / float(sum);
+	for (i,v) in enumerate(list):
 		if (i == 0):
 			if (v == 0):
 				cons = -1;
@@ -76,9 +89,8 @@ def calBurstyBeta(reception, data):
 	return Beta;
 
 #test
-reception = 0.7;
-data = [1,1,0,1,1,1,1,0,1,1,1,1,1,1,1,0,1,0,0,0,1,1];
-calBurstyBeta(reception, data);
+data = [1,0,0,0,0,2,0,0,0,1,0,0];
+calBurstyBeta(data);
 
 
 
