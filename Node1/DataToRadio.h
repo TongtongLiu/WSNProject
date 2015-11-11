@@ -4,7 +4,7 @@
 #define DATATORADIO_H
 
 enum {
-  MIN_INTERVAL = 1,
+  MIN_INTERVAL = 10,
   SIZE_OF_QUEUE = 256,
   DATA_MIN = 0,
   DATA_RANGE = 1024,

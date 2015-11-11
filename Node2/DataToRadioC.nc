@@ -122,7 +122,7 @@ implementation {
         busy = TRUE;
       }
       else {
-        post sendMsg();
+        //post sendMsg();
       }
     }
   }
@@ -175,7 +175,7 @@ implementation {
     }
     else {
       busy = FALSE;
-      post sendMsg();
+      //post sendMsg();
     }
   }
 
@@ -185,6 +185,11 @@ implementation {
       //printf("id = %u", btrpkt->id);
       //printfflush();
       //setLeds(btrpkt->counter);
+      if (full || receiverptr != senderptr) {
+        if (data[(receiverptr + SIZE_OF_QUEUE - 1) % SIZE_OF_QUEUE].id == btrpkt->id) {
+          return msg;
+        }
+      }
       if (!full) {
         data[receiverptr].id = btrpkt->id;
         data[receiverptr].data = btrpkt->data;

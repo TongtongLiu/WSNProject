@@ -88,7 +88,7 @@ implementation {
   }
 
   task void sendMsg() {
-    if (!busy && (full || receiverptr != senderptr)) {
+    if (!busy && (full || generatorptr != senderptr)) {
       DataToRadioMsg* dtrpkt = (DataToRadioMsg*)(call Packet.getPayload(&pkt, sizeof(DataToRadioMsg)));
       if (dtrpkt == NULL) {
         return;
@@ -111,7 +111,7 @@ implementation {
         busy = TRUE;
       }
       else {
-        post sendMsg();
+        //post sendMsg();
       }
     }
   }
@@ -165,7 +165,7 @@ implementation {
     }
     else {
       busy = FALSE;
-      post sendMsg();
+      //post sendMsg();
     }
   }
 }

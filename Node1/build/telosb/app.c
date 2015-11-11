@@ -971,7 +971,7 @@ typedef struct __nesc_unnamed4263 {
 TMicro;
 # 6 "DataToRadio.h"
 enum __nesc_unnamed4264 {
-  MIN_INTERVAL = 1, 
+  MIN_INTERVAL = 10, 
   SIZE_OF_QUEUE = 256, 
   DATA_MIN = 0, 
   DATA_RANGE = 1024, 
@@ -16696,7 +16696,7 @@ static inline void DataToRadioC__sendMsg__runTask(void )
   unsigned char *__nesc_temp42;
 
 #line 91
-  if (!DataToRadioC__busy) {
+  if (!DataToRadioC__busy && (DataToRadioC__full || DataToRadioC__generatorptr != DataToRadioC__senderptr)) {
       DataToRadioMsg *dtrpkt = (DataToRadioMsg *)DataToRadioC__Packet__getPayload(&DataToRadioC__pkt, sizeof(DataToRadioMsg ));
 
 #line 93
@@ -16721,7 +16721,6 @@ static inline void DataToRadioC__sendMsg__runTask(void )
           DataToRadioC__busy = TRUE;
         }
       else {
-          DataToRadioC__sendMsg__postTask();
         }
     }
 }
@@ -19284,7 +19283,6 @@ static void DataToRadioC__AMSend__sendDone(message_t *msg, error_t err)
     }
   else {
       DataToRadioC__busy = FALSE;
-      DataToRadioC__sendMsg__postTask();
     }
 }
 
